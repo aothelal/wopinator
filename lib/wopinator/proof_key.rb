@@ -2,10 +2,9 @@ require 'openssl'
 
 module Wopinator
   class ProofKey
-    attr_reader :value, :modulus, :exponent
+    attr_reader :modulus, :exponent
 
-    def initialize(value, modulus, exponent)
-      self.value = value
+    def initialize(modulus, exponent)
       self.modulus = convert(modulus)
       self.exponent = convert(exponent)
     end
@@ -19,7 +18,7 @@ module Wopinator
 
     private
 
-    attr_writer :value, :modulus, :exponent
+    attr_writer :modulus, :exponent
 
     def convert(value)
       # The modulus and the exponent of the RSA key are base 64 encoded

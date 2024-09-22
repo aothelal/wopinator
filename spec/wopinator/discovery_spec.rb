@@ -20,7 +20,6 @@ RSpec.describe Wopinator::Discovery do
     it 'should return proof key' do
       expect(subject.proof_key.modulus).to be_an(Integer)
       expect(subject.proof_key.exponent).to be_an(Integer)
-      expect(subject.proof_key.value).to be_an(String)
     end
   end
 
@@ -28,7 +27,6 @@ RSpec.describe Wopinator::Discovery do
     it 'should return old proof key' do
       expect(subject.old_proof_key.modulus).to be_an(Integer)
       expect(subject.old_proof_key.exponent).to be_an(Integer)
-      expect(subject.old_proof_key.value).to be_an(String)
     end
   end
 

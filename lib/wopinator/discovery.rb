@@ -26,11 +26,11 @@ module Wopinator
     end
 
     def proof_key
-      @_proof_key ||= ProofKey.new(proof_keys.value, proof_keys.modulus, proof_keys.exponent)
+      @_proof_key ||= ProofKey.new(proof_keys.modulus, proof_keys.exponent)
     end
 
     def old_proof_key
-      @_old_proof_key ||= ProofKey.new(proof_keys.oldvalue, proof_keys.oldmodulus, proof_keys.oldexponent)
+      @_old_proof_key ||= ProofKey.new(proof_keys.oldmodulus, proof_keys.oldexponent)
     end
 
     def apps
