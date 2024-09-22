@@ -34,9 +34,18 @@ module Wopinator
     def public_key
       # In order to reconstruct the RSA public key we use the modulus and exponent
       # since there is no way to import the base 64 encoded binary blob
-      @_public_key ||= OpenSSL::PKey::RSA.new.tap do |key|
-        set_key(key, OpenSSL::BN.new(modulus), OpenSSL::BN.new(exponent))
+      return @_public_key if @_public_key
+
+      if openssl_version == 3
+        sequence = OpenSSL::ASN1::Sequence.new([OpenSSL::ASN1::Integer.new(modulus), OpenSSL::ASN1::Integer.new(exponent)])
+        @_public_key = OpenSSL::PKey::RSA.new(sequence.to_der)
+      else
+        @_public_key = OpenSSL::PKey::RSA.new.tap do |key|
+          set_key(key, OpenSSL::BN.new(modulus), OpenSSL::BN.new(exponent))
+        end
       end
+
+      @_public_key
     end
 
     def set_key(key, n, e)
@@ -46,6 +55,10 @@ module Wopinator
         key.n = n
         key.e = e
       end
+    end
+
+    def openssl_version
+      OpenSSL::OPENSSL_VERSION[/\d+/]&.to_i
     end
   end
 end

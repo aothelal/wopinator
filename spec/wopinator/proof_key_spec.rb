@@ -24,42 +24,52 @@ RSpec.describe Wopinator::ProofKey do
   end
 
   context '.verify' do
-    it 'should verify expected signature' do
-      expected_signature = Wopinator::Signature.new(access_token, timestamp, url)
-      expect(subject.verify(signature, expected_signature)).to be_truthy
-    end
-
     context 'supports multiple ruby versions' do
-      let(:rsa) { double("rsa") }
-
-      before do
-        allow(rsa).to receive(:n=).with(instance_of(OpenSSL::BN))
-        allow(rsa).to receive(:e=).with(instance_of(OpenSSL::BN))
-        allow(rsa).to receive(:verify)
-          .with(instance_of(OpenSSL::Digest::SHA256), instance_of(String), instance_of(String))
-          .and_return(true)
-
-        allow(OpenSSL::PKey::RSA).to receive(:new).and_return(rsa)
-      end
-
-      context '>= 2.4.x' do
+      context 'supports OpenSSL 3' do
         before do
-          allow(rsa).to receive(:set_key).with(instance_of(OpenSSL::BN), instance_of(OpenSSL::BN), nil)
+          stub_const("OpenSSL::OPENSSL_VERSION", "OpenSSL 3.0.2 15 Mar 2022")
         end
-
+        
         it 'should verify expected signature' do
           expected_signature = Wopinator::Signature.new(access_token, timestamp, url)
           expect(subject.verify(signature, expected_signature)).to be_truthy
-          expect(rsa).to have_received(:set_key)
         end
       end
+      
+      context 'supports OpenSSL < 3' do
+        let(:rsa) { double("rsa") }
 
-      context '< 2.4.x' do
-        it 'should verify expected signature' do
-          expected_signature = Wopinator::Signature.new(access_token, timestamp, url)
-          expect(subject.verify(signature, expected_signature)).to be_truthy
-          expect(rsa).to have_received(:n=)
-          expect(rsa).to have_received(:e=)
+        before do
+          stub_const("OpenSSL::OPENSSL_VERSION", "OpenSSL 1.1.1f  31 Mar 2020")
+
+          allow(rsa).to receive(:n=).with(instance_of(OpenSSL::BN))
+          allow(rsa).to receive(:e=).with(instance_of(OpenSSL::BN))
+          allow(rsa).to receive(:verify)
+            .with(instance_of(OpenSSL::Digest::SHA256), instance_of(String), instance_of(String))
+            .and_return(true)
+
+          allow(OpenSSL::PKey::RSA).to receive(:new).and_return(rsa)
+        end
+
+        context '>= 2.4.x' do
+          before do
+            allow(rsa).to receive(:set_key).with(instance_of(OpenSSL::BN), instance_of(OpenSSL::BN), nil)
+          end
+
+          it 'should verify expected signature' do
+            expected_signature = Wopinator::Signature.new(access_token, timestamp, url)
+            expect(subject.verify(signature, expected_signature)).to be_truthy
+            expect(rsa).to have_received(:set_key)
+          end
+        end
+
+        context '< 2.4.x' do
+          it 'should verify expected signature' do
+            expected_signature = Wopinator::Signature.new(access_token, timestamp, url)
+            expect(subject.verify(signature, expected_signature)).to be_truthy
+            expect(rsa).to have_received(:n=)
+            expect(rsa).to have_received(:e=)
+          end
         end
       end
     end
